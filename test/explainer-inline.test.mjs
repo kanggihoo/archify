@@ -52,3 +52,18 @@ test('escaped backslashes do not consume a following closing emphasis delimiter'
   assert.equal(renderInline(source),'<strong>path\\</strong>');
   assert.equal(renderInline(String.raw`**literal\* still bold**`),'<strong>literal* still bold</strong>');
 });
+
+test('page references link sibling HTML files by name only and open in the same tab',()=>{
+  const parsed=parseInline('[설정](page:security-audit.setup.html)과 [개요](page:overview.html)');
+  assert.deepEqual(parsed.diagnostics,[]);
+  assert.deepEqual(parsed.references.map(({kind,file})=>({kind,file})),[
+    {kind:'page',file:'security-audit.setup.html'},
+    {kind:'page',file:'overview.html'}
+  ]);
+  const html=renderInline('[설정](page:security-audit.setup.html)');
+  assert.equal(html,'<a class="page-link" href="security-audit.setup.html">설정</a>');
+  assert.doesNotMatch(html,/target=/);
+  for(const href of ['page:','page:x','page:x.md','page:../x.html','page:dir/x.html','page:/x.html','page:.hidden.html','page:x.html#a','page:x.html?q=1','page:C:\\x.html','page:a b.html']){
+    assert.ok(parseInline(`[x](${href})`).diagnostics.length,href);
+  }
+});

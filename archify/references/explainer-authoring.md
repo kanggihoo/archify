@@ -79,6 +79,8 @@ A diagram replaces the paragraph that would describe it. When the answer involve
 | A change to code | `@diff` or a ```` ```diff ```` fence |
 | A command, config or code that does not exist yet | Plain fence |
 
+A step detail that opens with bold labels, such as `**Input** … · **Reads** … · **Output** … · **Next** …`, is shown as labelled rows (label left, text right). Use short labels of up to 8 characters, put each label before its text, and use at least two labels; any other detail stays one paragraph.
+
 Steps that walk through a diagram belong in the diagram's panel: the page reads them beside it, each step lighting its part, and the reader can step through them. Title each step with the label of the node it points at, so the text and the diagram match at a glance; the detail column says what to do there.
 
 A small answer gets a small page: the conclusion plus one or two panels. A how-it-works, diagnosis or checklist question usually needs three to five.
@@ -236,7 +238,7 @@ A plain fence (```` ```bash title="Run the tests" ````) is a literal snippet wit
 
 ## Inline links and sources
 
-`**bold**`, inline code and safe HTTP(S) links are supported. `[Redis](node:cache-read.redis)` and `[path](route:cache-read.api~redis)` open the native Viewer at existing targets. `[details](block:next)` jumps within the page.
+`**bold**`, inline code and safe HTTP(S) links are supported. `[Redis](node:cache-read.redis)` and `[path](route:cache-read.api~redis)` open the native Viewer at existing targets. `[details](block:next)` jumps within the page. `[Setup](page:report.setup.html)` links to a sibling HTML file in the same folder by file name only (no directories, `.html` suffix); it opens in the same tab, and the tool does not check that the file exists.
 
 `[reference text](source:docs)` renders the text followed by a numbered superscript; `[](source:docs)` renders only the superscript. Numbers follow first appearance; uncited sources follow in declaration order. The footer lists titles with URLs or repository positions.
 

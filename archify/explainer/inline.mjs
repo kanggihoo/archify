@@ -3,6 +3,7 @@ export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => 
 
 const identifier = /^[\p{L}\p{N}_-]+$/u;
 const targetIdentifier = /^[\p{L}\p{N}_.:-]+$/u;
+const pageFile = /^[\p{L}\p{N}_-][\p{L}\p{N}_.-]*\.html$/u;
 
 function referenceFor(href) {
   if (/^https?:\/\//i.test(href)) {
@@ -16,6 +17,8 @@ function referenceFor(href) {
   if (href.startsWith('block:') && identifier.test(href.slice(6))) return {kind:'block',id:href.slice(6)};
   if (href.startsWith('#') && identifier.test(href.slice(1))) return {kind:'block',id:href.slice(1)};
   if (href.startsWith('typical:') && href.slice(8).trim()) return {kind:'typical',text:href.slice(8).trim()};
+  // A sibling page in the same folder, named by file only: no directories, no leading dot, .html suffix.
+  if (href.startsWith('page:') && pageFile.test(href.slice(5))) return {kind:'page',file:href.slice(5)};
   if (href.startsWith('node:') || href.startsWith('route:')) {
     const kind = href.startsWith('node:') ? 'node' : 'route';
     const value = href.slice(kind.length + 1);
@@ -96,7 +99,7 @@ export function parseInline(value, options = {}) {
           const label=text.slice(i+1,labelEnd), href=text.slice(labelEnd+2,close).replace(/\\([()\\])/g,'$1');
           const reference=referenceFor(href);
           if ((!label.trim() && reference?.kind !== 'source') || !reference) {
-            problem('target',i,'Use a nonempty label and an HTTP(S), source, block, node, route or typical destination.','[Redis](node:read-path.redis)');
+            problem('target',i,'Use a nonempty label and an HTTP(S), source, block, node, route, page or typical destination.','[Redis](node:read-path.redis)');
             literal(text.slice(i,close+1));
           } else {
             const entry={...reference,offset:i,end:close+1};references.push(entry);
@@ -131,6 +134,7 @@ export function renderInline(value, context = {}) {
     if (token.type === 'strong' || token.type === 'em') return `<${token.type}>${render(token.children)}</${token.type}>`;
     const label=escapeHtml(token.label), ref=token.reference;
     if (ref.kind === 'web') return `<a href="${escapeHtml(ref.url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    if (ref.kind === 'page') return `<a class="page-link" href="${escapeHtml(ref.file)}">${label}</a>`;
     if (ref.kind === 'source') {
       const citations = context.citations || (context.citations = new Map());
       if (!citations.has(ref.id)) citations.set(ref.id,citations.size + 1);
