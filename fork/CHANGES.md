@@ -62,7 +62,7 @@
 
 ## I1. 설치 스크립트 `fork/link-install.ps1` (2026-11-18)
 
-`~/.agents/skills/archify`를 이 fork의 `archify/` 폴더로 연결(junction)하거나 해제한다. `status`, `install`, `uninstall`. 실제 폴더는 `-Force` 없이는 교체하지 않는다. GitHub branch에서 `npx skills`로 설치하는 방법과의 비교는 [FORK.md](FORK.md)의 "설치".
+`~/.agents/skills/archify`를 이 fork의 `archify/` 폴더로 연결(junction)하거나 해제한다. `status`, `install`, `uninstall`. 실제 폴더는 `-Force` 없이는 교체하지 않는다. GitHub branch에서 `npx skills`로 설치하는 방법과의 비교는 [FORK.md](FORK.md)의 "설치". 2026-11-26부터 `archify-pr/`도 같이 연결하고, `~/.claude/skills/<이름>` 링크가 없으면 만든다.
 
 ## U1. upstream v3.3.2 병합 (2026-11-26)
 

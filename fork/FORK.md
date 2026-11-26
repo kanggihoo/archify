@@ -89,7 +89,7 @@ pwsh fork/link-install.ps1 uninstall
 ```
 
 - 복사본이 없어서 이 checkout을 고치는 즉시 AI에 반영된다. 대신 working tree가 그대로 노출된다. 평소에는 `custom`을 checkout한 채로 두고, 실험은 `git worktree`로 다른 폴더에서 한다.
-- 연결은 `archify/` 폴더만 가리킨다. 루트의 `archify-pr/` skill은 연결되지 않는다. `fork/`, `viewer/`, `scripts/`, `test/`는 AI에게 보이지 않는다.
+- `archify/`와 `archify-pr/` 두 폴더를 연결한다. `~/.agents/skills/<이름>`이 이 checkout을 가리키고, `~/.claude/skills/<이름>`이 없으면 그 위치를 가리키는 링크도 만든다. `fork/`, `viewer/`, `scripts/`, `test/`는 AI에게 보이지 않는다.
 - `npx skills update archify`는 돌리지 않는다. junction을 덮어쓰거나 거부하는지 확인하지 않았다.
 - junction은 `rm -rf`로 지우지 않는다. 연결 대상 파일이 지워질 수 있다. `link-install.ps1 uninstall`을 쓴다.
 - 이 checkout의 경로를 옮기면 연결이 끊어진다.
