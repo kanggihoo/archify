@@ -1,6 +1,6 @@
 # 이 fork의 운영 지침
 
-이 문서는 `tt-a1i/archify`를 fork해서 `custom` branch에서 고쳐 쓰는 방법을 적는다. 원본 레포의 문서가 아니고, 원본에 PR을 올리지 않는 것을 전제로 한다. 2026-11-18 작성, 기준 upstream commit `44781293`.
+이 문서는 `tt-a1i/archify`를 fork해서 `custom` branch에서 고쳐 쓰는 방법을 적는다. 원본 레포의 문서가 아니고, 원본에 PR을 올리지 않는 것을 전제로 한다. 2026-11-18 작성, 2026-11-26 갱신. 기준 upstream commit `d6b0f71f`(v3.3.2 이후).
 
 ## 구조
 
@@ -23,10 +23,10 @@ upstream이 C1, C2의 파일을 고치면 진짜 conflict가 난다. 이것은 �
 
 ## 지운 것 (`fork/prune.list`)
 
-`journal/`, `integrations/`, `.agents/`, `community/`와, 이 폴더가 없으면 실패하는 `test/archify-tuning.test.mjs`, `test/community-packages.test.mjs`, `scripts/check-community-packages.mjs`.
+`journal/`, `integrations/`, `community/`와, 이 폴더가 없으면 실패하는 `test/community-packages.test.mjs`, `scripts/check-community-packages.mjs`.
 
 - 지운 이유: 이 fork의 용도(explainer 렌더 커스텀)에 쓰지 않는다.
-- 일부러 남긴 것: `.github/`(CI 정의를 읽는 테스트 6개가 의존한다), `docs/`(코드가 가장 많이 언급한다), `website/`, `LICENSE`, `LICENSE-MIT`, `NOTICE`, `THIRD_PARTY_NOTICES.md`(Apache-2.0 고지라 지우지 않는다).
+- 일부러 남긴 것: `.agents/`와 `test/archify-tuning.test.mjs`(`test/skill-installation.test.mjs`와 `test/skill-metadata.test.mjs`가 `.agents/skills`를 읽는다), `.github/`(CI 정의를 읽는 테스트 6개가 의존한다), `docs/`(코드가 가장 많이 언급한다), `website/`, `LICENSE`, `LICENSE-MIT`, `NOTICE`, `THIRD_PARTY_NOTICES.md`(Apache-2.0 고지라 지우지 않는다).
 - `website/test/`는 `community/`에 의존하므로 깨진다. 루트 `package.json`의 테스트 스크립트에는 `website`가 들어 있지 않아서 `npm test`에는 영향이 없다. website 테스트는 돌리지 않는다.
 
 ## upstream을 가져오는 방법
@@ -44,7 +44,7 @@ upstream이 C1, C2의 파일을 고치면 진짜 conflict가 난다. 이것은 �
    | 지운 경로를 upstream이 수정했다 | `deleted by us` / `CONFLICT (modify/delete)` | `node fork/prune.mjs`가 해당 경로를 지우고 해결한다 |
    | upstream이 지운 폴더 안에 새 파일을 추가했다 | 조용히 다시 생긴다 | 같은 `node fork/prune.mjs`로 다시 지운다 |
    | 우리가 고친 파일을 upstream도 고쳤다 | 파일 안에 `<<<<<<<` | 직접 합친다. 아래 4번을 본다 |
-   | `package-lock.json`, `archify/assets/template.html` 같은 생성 파일 | conflict | 원본 쪽을 받고 다시 생성한다(`npm ci`, `npm --prefix archify run generate:viewer`) |
+   | `pnpm-lock.yaml`, `archify/package-lock.json`, `archify/assets/template.html` 같은 생성 파일 | conflict | 원본 쪽을 받고 다시 생성한다(`pnpm install`, `pnpm --dir archify run generate:viewer`) |
 
 4. `node fork/prune.mjs` 실행 후에도 `git status`에 conflict가 남아 있다면 그것은 진짜 코드 conflict다. `inline.mjs`, `render.mjs`, `reader.css`, `explainer-authoring.md`가 대상이다. 합칠 때 지킬 것은 아래 두 가지다.
    - `inline.mjs`의 `referenceFor`에 있는 `page:` 분기와 `renderInline`의 `page` 렌더 분기를 남긴다.
@@ -52,12 +52,16 @@ upstream이 C1, C2의 파일을 고치면 진짜 conflict가 난다. 이것은 �
 5. 끝나면 확인한다.
    ```
    node fork/prune.mjs --check        # 지운 경로가 다시 추적되는지 (exit 0이어야 한다)
-   npm ci --ignore-scripts
+   pnpm install --frozen-lockfile --ignore-scripts
    npm --prefix archify ci --ignore-scripts
-   npm run test:generated
+   pnpm run test:generated
    node --test test/explainer-*.test.mjs
-   npm run test:core
+   node --test test/skill-installation.test.mjs test/skill-metadata.test.mjs
+   pnpm run test:core
+   git checkout -- pnpm-lock.yaml     # pnpm이 로컬에서 덧붙인 줄을 되돌린다
    ```
+
+   마지막 `git checkout`은 `pnpm-lock.yaml`을 staged 상태(merge 결과)로 되돌린다.
 6. 통과하면 `commit`한다.
 
 ## 설치 (AI가 이 fork를 쓰게 하는 방법)
@@ -85,7 +89,7 @@ pwsh fork/link-install.ps1 uninstall
 ```
 
 - 복사본이 없어서 이 checkout을 고치는 즉시 AI에 반영된다. 대신 working tree가 그대로 노출된다. 평소에는 `custom`을 checkout한 채로 두고, 실험은 `git worktree`로 다른 폴더에서 한다.
-- 연결은 `archify/` 폴더만 가리킨다. `fork/`, `viewer/`, `scripts/`, `test/`는 AI에게 보이지 않는다.
+- 연결은 `archify/` 폴더만 가리킨다. 루트의 `archify-pr/` skill은 연결되지 않는다. `fork/`, `viewer/`, `scripts/`, `test/`는 AI에게 보이지 않는다.
 - `npx skills update archify`는 돌리지 않는다. junction을 덮어쓰거나 거부하는지 확인하지 않았다.
 - junction은 `rm -rf`로 지우지 않는다. 연결 대상 파일이 지워질 수 있다. `link-install.ps1 uninstall`을 쓴다.
 - 이 checkout의 경로를 옮기면 연결이 끊어진다.
@@ -100,7 +104,8 @@ pwsh fork/link-install.ps1 uninstall
 ## 환경 메모
 
 - 이 PC는 Git Bash를 쓴다. `git sparse-checkout`처럼 `/폴더/` 모양의 인자를 줄 때는 `MSYS_NO_PATHCONV=1`을 앞에 붙인다. 안 붙이면 `C:/Program Files/Git/폴더/`로 바뀐다.
-- `node_modules`는 루트와 `archify/` 둘 다에 `npm ci --ignore-scripts --no-audit --no-fund`로 설치한다. `archify/`의 `simple-icons`가 없으면 `test:generated`의 `check:brand-marks`가 실패한다.
-- `npm run test:full`은 오래 걸린다(25분 넘게 끝나지 않았다). 평소에는 위 5번의 세 가지만 돌린다.
-- `test/browser-gate.test.mjs`는 upstream 상태에서도 2개가 실패한다(baseline). 우리 변경이 원인이 아니다.
+- upstream은 루트를 pnpm으로 관리한다(`packageManager: pnpm@12.21.0`). 루트는 `pnpm install --frozen-lockfile --ignore-scripts`, `archify/`는 `npm --prefix archify ci --ignore-scripts --no-audit --no-fund`로 설치한다. `archify/`의 `simple-icons`가 없으면 `test:generated`의 `check:brand-marks`가 실패한다.
+- `pnpm run test:full`은 오래 걸린다(3.2.0 기준 25분 넘게 끝나지 않았다). 평소에는 위 5번의 것만 돌린다.
+- `test/explainer-*.test.mjs` 중 symlink를 만드는 3개는 Windows에서 symlink 권한이 없으면 `EPERM`으로 실패한다.
+- `test/browser-gate.test.mjs`는 3.2.0 upstream 상태에서도 2개가 실패했다(baseline, 3.3.2에서는 다시 확인하지 않았다). 우리 변경이 원인이 아니다.
 - 설치된 skill(`~/.claude/skills/archify`)은 이 fork와 별개다. 이 fork의 CLI(`archify/bin/archify.mjs`)로 렌더해야 `page:` 링크와 `@steps` 라벨 행이 동작한다. 설치본을 바꾸는 것은 사용자가 명시적으로 요청할 때만 한다(루트 `AGENTS.md` 규칙).

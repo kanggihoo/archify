@@ -1,6 +1,6 @@
 # 변경 기록 (upstream과 달라진 점)
 
-기준 upstream: `tt-a1i/archify` `44781293`(2026-11-17). 새로 바꿀 때마다 아래에 항목을 추가한다. 병합 방법은 [FORK.md](FORK.md)에 있다.
+기준 upstream: `tt-a1i/archify` `d6b0f71f`(2026-11-26, v3.3.2 이후). 새로 바꿀 때마다 아래에 항목을 추가한다. 병합 방법은 [FORK.md](FORK.md)에 있다.
 
 ## C1. explainer 페이지 링크 `page:` (2026-11-18)
 
@@ -58,11 +58,23 @@
 
 ## P1. 안 쓰는 폴더 삭제 (2026-11-18)
 
-`journal/`, `integrations/`, `.agents/`, `community/`와 의존 테스트·스크립트 3개(`test/archify-tuning.test.mjs`, `test/community-packages.test.mjs`, `scripts/check-community-packages.mjs`)를 지웠다. 목록은 `fork/prune.list`, 스크립트는 `fork/prune.mjs`. 남긴 것과 이유는 [FORK.md](FORK.md).
+`journal/`, `integrations/`, `community/`와 의존 테스트·스크립트 2개(`test/community-packages.test.mjs`, `scripts/check-community-packages.mjs`)를 지웠다. `.agents/`와 `test/archify-tuning.test.mjs`는 upstream 테스트가 의존해서 2026-11-26에 되살렸다. 목록은 `fork/prune.list`, 스크립트는 `fork/prune.mjs`. 남긴 것과 이유는 [FORK.md](FORK.md).
 
 ## I1. 설치 스크립트 `fork/link-install.ps1` (2026-11-18)
 
 `~/.agents/skills/archify`를 이 fork의 `archify/` 폴더로 연결(junction)하거나 해제한다. `status`, `install`, `uninstall`. 실제 폴더는 `-Force` 없이는 교체하지 않는다. GitHub branch에서 `npx skills`로 설치하는 방법과의 비교는 [FORK.md](FORK.md)의 "설치".
+
+## U1. upstream v3.3.2 병합 (2026-11-26)
+
+`44781293`에서 `d6b0f71f`까지 병합했다. 3.3.0, 3.3.1, 3.3.2가 함께 들어왔다.
+
+**손으로 푼 conflict**
+- `archify/explainer/render.mjs`: upstream의 `parseInline` import와 새 `diagram` 렌더를 받고, `step-fields.mjs` import와 `stepDetail` 호출을 남겼다.
+- `archify/references/explainer-authoring.md`: C2의 라벨 행 문단을 남기고, upstream의 steps 문단과 표 폭 문단을 받았다.
+
+**확인**: `test:generated` 통과, `test:core` 19개 통과. explainer 테스트 227개 중 203개 통과, 21개 skip, 3개는 Windows symlink 권한(`EPERM`)으로 실패. `.agents/`를 되살린 뒤 skill 설치·metadata 테스트 33개 통과. `tls-first-visit` 사례에 라벨 행과 `page:` 링크를 넣어 `finalize --quality showcase --browser-check` 통과, headless Chrome 스크린샷(어두운 테마, 폭 1440)으로 모양 확인.
+
+**확인하지 않은 것**: `test:full`, website 테스트, 라이트 테마, 좁은 화면, 링크 클릭 이동.
 
 ## AI가 이 변경을 알게 되는 경로
 

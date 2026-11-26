@@ -2,9 +2,7 @@
 # Keep LICENSE, LICENSE-MIT, NOTICE and THIRD_PARTY_NOTICES.md out of this list (Apache-2.0 notices).
 journal
 integrations
-.agents
 community
 # Tests and scripts that only work with the folders above.
-test/archify-tuning.test.mjs
 test/community-packages.test.mjs
 scripts/check-community-packages.mjs
